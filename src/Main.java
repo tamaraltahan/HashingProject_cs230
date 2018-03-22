@@ -42,7 +42,7 @@ public class Main {
 
 
     public static void main(String[] args){
-        ChainHashMap<Integer,String> chainmap = new ChainHashMap<>();
+        ChainHashMap<Integer,String> chainMap = new ChainHashMap<>();
         ProbeHashMap<Integer,String> probeMap = new ProbeHashMap<>();
         double[] loadFactors = {0.25,0.50,0.75,0.90};
 
@@ -52,16 +52,22 @@ public class Main {
         reader.parseFile(); //read file
         list = reader.getList(); //populate Arraylist with all values
 
+        //print the arraylist - for debugging
+        System.out.println("The List");
+        for(int i = 0; i<list.size(); i++){
+            System.out.print(list.get(i) + " ");
+        }
+        System.out.println();
         //for debug
-        //System.out.println("Number of values " + reader.getNumberofElements());
+        System.out.println("Number of values " + reader.getNumberofElements());
 
         //populate map with values
-        populateChainMap(chainmap,loadFactors[3]);
+        populateChainMap(chainMap,loadFactors[3]);
         populateProbeMap(probeMap,loadFactors[3]);
 
         //print values
         System.out.println("ChainHashMap");
-        printChainMap(chainmap);
+        printChainMap(chainMap);
 
         System.out.println("ProbeHashMap");
         printProbeMap(probeMap);

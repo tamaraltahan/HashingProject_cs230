@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
+
 public class Reader {
 
-    private static final String file = "C:\\Users\\Tamar\\Desktop\\p1small-1.txt";
+    private static final String file = "C:\\Users\\tamar\\Desktop\\stuff\\CS stuff\\p1small-1.txt";
     private ArrayList<Integer> list = new ArrayList<>();
     private int totalNumbers;
     public void parseFile() {
@@ -19,6 +20,7 @@ public class Reader {
             String text;
 
             while ((text = reader.readLine()) != null) {
+                totalNumbers = Integer.parseInt(text);
                 String numLine = reader.readLine();
                 String[] numbers = numLine.split("\\s+"); //split by space
                 for(int i = 0; i < numbers.length; i++){
