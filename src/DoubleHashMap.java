@@ -82,7 +82,7 @@ public class DoubleHashMap<K, V> extends AbstractHashMap<K, V> {
      * @return index of found entry or if not found, value -(a+1) where a is index of first available slot
      */
     private int findSlot(int h, K k) {
-        int i = 0;
+        int i = 1;
         totalProbes = 0;
         int avail = -1;                               // no slot available (thus far)
         int j = h;                                    // index while scanning table
@@ -96,30 +96,45 @@ public class DoubleHashMap<K, V> extends AbstractHashMap<K, V> {
                 }                                           // if empty, search fails immediately
             } else if (table[j].getKey().equals(k))
                 return j;                                 // successful match
-            //j = (j + 1) % capacity;                       // keep looking (cyclically)
-            //j += hashTwo(k); //increment using double hash
-            j += doubleHash(h, i, k);
+            //j = (j + 1) % capacity;                     // keep looking (cyclically)
+            //j = j + hashTwo(k); //increment using double hash
+            //j = (j+f(i, k) % capacity);
+            j = (j + fOfi(i, k)) % capacity;
             i++;
         } while (j != h);                             // stop if we return to the start
         return -(avail + 1);                          // search has failed
     }
 
+    //h`(k)
     private int hashTwo(K key) {
         String keyString = key.toString(); //convert generic -> string -> int
         int keyInt = Integer.parseInt(keyString);
-        int ans = 7 - keyInt % 7;
+        int prime = primeUnder(table.length);
+        int ans = prime - (keyInt % prime);
         System.out.println(ans);
         return ans;
     }
 
-    private int doubleHash(int h, int i, K key) {
-        return h + fOfi(i, key) % capacity;
-    }
-
+    //f(i)
     private int fOfi(int i, K key) {
         return i * hashTwo(key);
     }
 
+    private static int primeUnder(int n) {
+        while (!prime(n)) {
+            n--;
+        }
+        return n;
+    }
+    private static boolean prime(int m) {
+        int n = m;
+        for (int i = 2; i < n; i++) {
+            if (n % i == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * Returns value associated with key k in bucket with hash value h.

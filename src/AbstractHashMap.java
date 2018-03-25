@@ -98,8 +98,7 @@ public abstract class AbstractHashMap<K,V> extends AbstractMap<K,V> {
         capacity = newCap;
         createTable();                     // based on updated capacity
         n = 0;                             // will be recomputed while reinserting entries
-        for (Entry<K,V> e : buffer)
-            put(e.getKey(), e.getValue());
+
     }
 
     // protected abstract methods to be implemented by subclasses
