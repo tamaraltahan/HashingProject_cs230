@@ -1,11 +1,27 @@
 import java.util.ArrayList;
+import java.util.Iterator;
+
+/**
+ * This class is a non functional attempt of using an OOP style of setting and getting clusters of each class
+ * I'm leaving it in for me to look over in the future
+ *
+ * The problem with this class is that the different hash map schemes can't be passed as the same type, so I could not find a way to fill the table array
+ * the underlying code works, and I just integrated it into the each of the 3 classes instead of fiddling with this method.
+ */
 public class ClusterExtractor{
 
-    public ClusterExtractor(AbstractMap.MapEntry<Integer,String>[] arr){
-        table = arr;
+    /*
+    public ClusterExtractor(Iterable<Entry<Integer,String>> set){
+        Iterator<Entry<Integer,String>> iter = set.iterator();
+        int i = 0;
+        while(iter.hasNext()){
+            table[i] = iter.next();
+            i++;
+        }
     }
+    */
 
-    private static ArrayList<Integer> clusterSizes = new ArrayList<>();;
+    private static ArrayList<Integer> clusterSizes = new ArrayList<>();
 
     private static AbstractMap.MapEntry<Integer,String>[] table;
     private static AbstractMap.MapEntry<Integer,String> DEFUNCT = new AbstractMap.MapEntry<>(null, null);

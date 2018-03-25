@@ -10,12 +10,26 @@ import java.util.ArrayList;
  */
 
 public class DoubleHashMap<K, V> extends AbstractHashMap<K, V> {
-    //my data
-    int maxProbes = -1;
-    int totalProbes;
-    int probeAttempts;
+
     private MapEntry<K, V>[] table;        // a fixed array of entries (all initially null)
     private MapEntry<K, V> DEFUNCT = new MapEntry<>(null, null);   //sentinel
+
+    //probe data
+    int maxProbes = -1;
+    int totalProbes = 0;
+
+    public int getMaxProbes() {
+        return maxProbes;
+    }
+
+    public int getAverageProbes() {
+        return maxProbes / totalProbes;
+    }
+
+    public void printProbeInfo() {
+        System.out.println("Max Probe attempts: " + getMaxProbes() + "\nAverage number of probes: " + getAverageProbes());
+    }
+    //
 
     /**
      * Creates a hash table with capacity 17 and prime factor 109345121.
@@ -39,37 +53,6 @@ public class DoubleHashMap<K, V> extends AbstractHashMap<K, V> {
      */
     public DoubleHashMap(int cap, int p) {
         super(cap, p);
-    }
-
-
-    private int hashTwo(int hash, int i) {
-
-    }
-
-    private static int primeUnder(int n) {
-        while (!prime(n)) {
-            n--;
-        }
-        return n;
-    }
-
-    private static boolean prime(int m) {
-        int n = m;
-        for (int i = 2; i < n; i++) {
-            if (n % i == 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    public int getMaxProbes() {
-        return maxProbes;
-    }
-
-    public int getAverageProbes() {
-        return totalProbes / probeAttempts;
     }
 
     /**
@@ -99,24 +82,44 @@ public class DoubleHashMap<K, V> extends AbstractHashMap<K, V> {
      * @return index of found entry or if not found, value -(a+1) where a is index of first available slot
      */
     private int findSlot(int h, K k) {
-        probeAttempts++;
+        int i = 0;
         totalProbes = 0;
         int avail = -1;                               // no slot available (thus far)
         int j = h;                                    // index while scanning table
         do {
+            totalProbes++;
+            if (totalProbes > maxProbes) maxProbes = totalProbes;
             if (isAvailable(j)) {                       // may be either empty or defunct
-                totalProbes++; //increment probes
                 if (avail == -1) avail = j;               // this is the first available slot!
                 if (table[j] == null) {
                     break;
-                }             // if empty, search fails immediately
+                }                                           // if empty, search fails immediately
             } else if (table[j].getKey().equals(k))
                 return j;                                 // successful match
-            j = (j + 1) % capacity;                       // keep looking (cyclically)
+            //j = (j + 1) % capacity;                       // keep looking (cyclically)
+            //j += hashTwo(k); //increment using double hash
+            j += doubleHash(h, i, k);
+            i++;
         } while (j != h);                             // stop if we return to the start
-        if (maxProbes > totalProbes) maxProbes = totalProbes; //set max probes
         return -(avail + 1);                          // search has failed
     }
+
+    private int hashTwo(K key) {
+        String keyString = key.toString(); //convert generic -> string -> int
+        int keyInt = Integer.parseInt(keyString);
+        int ans = 7 - keyInt % 7;
+        System.out.println(ans);
+        return ans;
+    }
+
+    private int doubleHash(int h, int i, K key) {
+        return h + fOfi(i, key) % capacity;
+    }
+
+    private int fOfi(int i, K key) {
+        return i * hashTwo(key);
+    }
+
 
     /**
      * Returns value associated with key k in bucket with hash value h.
@@ -187,4 +190,80 @@ public class DoubleHashMap<K, V> extends AbstractHashMap<K, V> {
         return table.length;
     }
 
+
+    //cluster related code
+
+    private ArrayList<Integer> clusterSizes = new ArrayList<>();
+    private int largestCluster = 0;
+    private int numberOfClusters = 0;
+    private int averageClusterSize = 0;
+
+    //getters
+    public int getLargestCluster() {
+        return largestCluster;
+    }
+
+    public int getNumberofClusters() {
+        return numberOfClusters;
+    }
+
+    public int getAverageClusterSize() {
+        return averageClusterSize;
+    }
+
+
+    private boolean isCluster(int i) {
+        return table[i] != null && table[i + 1] != null;
+    }
+
+    public void parseClusters() {
+        int clusterSize = 0;
+        for (int i = 0; i < table.length - 1; i++) {
+            if (isCluster(i)) {
+                clusterSize++;
+            } else if (i > 0 && isCluster(i - 1)) {
+                clusterSize++;
+                numberOfClusters++;
+                clusterSizes.add(clusterSize);
+                if (clusterSize > largestCluster) largestCluster = clusterSize;
+                clusterSize = 0;
+            }
+        }
+        if (table[0] == null && isCluster(table.length - 2)) {
+            numberOfClusters++;
+            clusterSize++;
+            clusterSizes.add(clusterSize);
+            if (clusterSize > largestCluster) largestCluster = clusterSize;
+            clusterSize = 0;
+        }
+        if (table[0] != null && table[0] != DEFUNCT && table[table.length - 1] != null) {
+            clusterSize++;
+            if (clusterSize > largestCluster) largestCluster = clusterSize;
+            if (clusterSizes.size() != 0) {
+                clusterSizes.set(0, clusterSize + clusterSizes.get(0));
+            } else {
+                clusterSizes.add(clusterSize);
+            }
+            if (!isCluster(0)) {
+                numberOfClusters++;
+                clusterSize++;
+                clusterSizes.add(clusterSize);
+                if (clusterSize > largestCluster) largestCluster = clusterSize;
+                //clusterSize = 0;
+            }
+        }
+
+        for (int i = 0; i < clusterSizes.size(); i++) {
+            averageClusterSize += clusterSizes.get(i);
+        }
+        if (numberOfClusters != 0) {
+            averageClusterSize /= numberOfClusters;
+        } else {
+            averageClusterSize = 0;
+        }
+    }
+
+    public void printClusterInfo() {
+        System.out.println("Largest cluster: " + largestCluster + "\nAverage number of clusters " + numberOfClusters + "\nAverage cluster size: " + averageClusterSize);
+    }
 }

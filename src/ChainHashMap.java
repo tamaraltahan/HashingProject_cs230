@@ -16,21 +16,34 @@ public class ChainHashMap<K, V> extends AbstractHashMap<K, V> {
     private int maxClusterSize = 0;
     private int averageClusterSize = 0;
     private int numberOfClusters = 0;
+
     //getters
-    public int getMaxClusterSize(){return maxClusterSize;}
-    public int getAverageClusterSize(){return averageClusterSize;}
-    public int getNumberOfClusters(){return numberOfClusters;}
+    public int getMaxClusterSize() {
+        return maxClusterSize;
+    }
+
+    public int getAverageClusterSize() {
+        return averageClusterSize;
+    }
+
+    public int getNumberOfClusters() {
+        return numberOfClusters;
+    }
     //
 
     //probe info
     private int averageProbes = 0;
     private int maxProbes = 0;
+
     //getters
-    public int getAverageProbes(){return averageProbes;}
-    public int getMaxProbes(){return maxProbes;}
+    public int getAverageProbes() {
+        return averageProbes;
+    }
+
+    public int getMaxProbes() {
+        return maxProbes;
+    }
     //
-
-
 
 
     // provide same constructors as base class
@@ -133,23 +146,31 @@ public class ChainHashMap<K, V> extends AbstractHashMap<K, V> {
         return buffer;
     }
 
-    public void parseClusters() {;
+    public void parseClusters() {
         int numOfBuckets = 0;
         int totalBucketSize = 0;
-        int clusterSize = 0;
+        int clusterSize;
         for (int i = 0; i < table.length; i++) {
-            UnsortedTableMap<K, V> bucket = table[i];
-            if (bucket != null) {
+            UnsortedTableMap<K,V> bucket = table[i]; //Make a bucket equivalent to each table index
+            if (bucket != null) { //if the bucket is not empty
+                clusterSize = bucket.size();
                 numOfBuckets++;
                 totalBucketSize += bucket.size();
-                if(bucket.size() > maxProbes) maxProbes = bucket.size();
-                if (bucket.size() > 0)
-                    numberOfClusters++;
-                    clusterSize = bucket.size();
+                if (bucket.size() > 0) numberOfClusters++;
+                if (bucket.size() > maxProbes) maxProbes = bucket.size();
                 if (clusterSize > maxClusterSize) maxClusterSize = clusterSize;
             }
         }
-        averageClusterSize = clusterSize/numberOfClusters;
+        averageClusterSize = totalBucketSize / numberOfClusters;
         averageProbes = totalBucketSize / numOfBuckets;
     }
+
+    public void printClusterInfo() {
+        System.out.println("Largest cluster: " + maxClusterSize + "\nNumber of clusters " + numberOfClusters + "\nAverage cluster size: " + averageClusterSize);
+    }
+
+    public void printProbeInfo() {
+        System.out.println("Max Probe attempts: " + getMaxProbes() + "\nAverage number of probes: " + getAverageProbes());
+    }
+
 }
